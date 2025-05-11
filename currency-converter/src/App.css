@@ -1,0 +1,32 @@
+.app {
+  text-align: center;
+  padding: 2rem;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.converter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+input, select, button {
+  padding: 10px;
+  font-size: 1rem;
+}
+
+button {
+  cursor: pointer;
+}
+
+.result {
+  font-size: 1.2rem;
+  margin-top: 20px;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+}
