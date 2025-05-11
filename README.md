@@ -25,3 +25,16 @@ A simple and modern currency converter built with **React (Vite)** and **FastAPI
 git clone https://github.com/Abobbynwa/currency-converter.git
 cd currency-converter
 
+ Backend Setup (FastAPI)
+
+cd backend
+python -m venv env
+source env/bin/activate  # On Windows use `env\Scripts\activate`
+pip install -r requirements.txt
+uvicorn main:app --reload
+
+🌐 Frontend Setup (React)
+
+cd frontend
+npm install
+npm run dev
