@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+
 const App = () => {
   const [amount, setAmount] = useState(1);
   const [fromCurrency, setFromCurrency] = useState('NGN');
@@ -13,24 +16,41 @@ const App = () => {
   useEffect(() => {
     const fetchRates = async () => {
       try {
-        const response = await fetch('https://api.exchangerate-api.com/v4/latest/NGN');
+        setLoading(true);
+        setError('');
+
+        const response = await fetch(`${API_BASE}/rates/${fromCurrency}`);
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch rates');
+        }
+
         const data = await response.json();
-        setRates(data.rates);
-        setLoading(false);
+
+        // exchangerate-api v6 returns conversion_rates
+        if (!data.conversion_rates) {
+          throw new Error('Invalid API response');
+        }
+
+        setRates(data.conversion_rates);
       } catch (err) {
         setError('Failed to load exchange rates');
+        setRates({});
+      } finally {
         setLoading(false);
       }
     };
-    fetchRates();
-  }, []);
 
-  const convert = () => {
-    if (rates[toCurrency] && rates[fromCurrency]) {
-      const rate = rates[toCurrency] / rates[fromCurrency];
-      setConverted((amount * rate).toFixed(2));
+    fetchRates();
+  }, [fromCurrency]);
+
+  useEffect(() => {
+    if (rates[toCurrency] && amount !== '') {
+      setConverted((Number(amount) * rates[toCurrency]).toFixed(2));
+    } else {
+      setConverted(null);
     }
-  };
+  }, [amount, toCurrency, rates]);
 
   const handleSwap = () => {
     const temp = fromCurrency;
@@ -41,6 +61,7 @@ const App = () => {
   return (
     <div className="app">
       <h1>🌍 Currency Converter</h1>
+
       {loading ? (
         <p>Loading exchange rates...</p>
       ) : error ? (
@@ -51,21 +72,35 @@ const App = () => {
             <input
               type="number"
               value={amount}
-              onChange={e => setAmount(e.target.value)}
+              onChange={(e) => setAmount(e.target.value)}
+              min="0"
             />
-            <select value={fromCurrency} onChange={e => setFromCurrency(e.target.value)}>
-              {Object.keys(rates).map(currency => (
-                <option key={currency} value={currency}>{currency}</option>
+
+            <select
+              value={fromCurrency}
+              onChange={(e) => setFromCurrency(e.target.value)}
+            >
+              {Object.keys(rates).map((currency) => (
+                <option key={currency} value={currency}>
+                  {currency}
+                </option>
               ))}
             </select>
+
             <button onClick={handleSwap}>⇄</button>
-            <select value={toCurrency} onChange={e => setToCurrency(e.target.value)}>
-              {Object.keys(rates).map(currency => (
-                <option key={currency} value={currency}>{currency}</option>
+
+            <select
+              value={toCurrency}
+              onChange={(e) => setToCurrency(e.target.value)}
+            >
+              {Object.keys(rates).map((currency) => (
+                <option key={currency} value={currency}>
+                  {currency}
+                </option>
               ))}
             </select>
-            <button onClick={convert}>Convert</button>
           </div>
+
           {converted && (
             <p className="result">
               {amount} {fromCurrency} = <strong>{converted} {toCurrency}</strong>
